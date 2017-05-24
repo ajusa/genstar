@@ -1,6 +1,6 @@
-local tie = {x=400, y=400, w=16, h=16, dx=0, dy=0, speed=1.5, angle=0, turnSpeed = 2, fireDelay = .5, timeFire = 0, bulletSpeed = 100, lives = 5}
-local xwing = {x=500, y=500, w=16, h=16, dx=0, dy=0, speed=1.5, angle=0, turnSpeed = 2, fireDelay = .5, timeFire = 0, bulletSpeed = 100, lives = 5}
-game = false
+local tie = {x=400, y=400, w=16, h=16, dx=0, dy=0, speed=1.5, angle=0, turnSpeed = 2, fireDelay = .5, timeFire = 0, bulletSpeed = 200, lives = 5}
+local xwing = {x=500, y=500, w=16, h=16, dx=0, dy=0, speed=1.5, angle=0, turnSpeed = 2, fireDelay = .5, timeFire = 0, bulletSpeed = 200, lives = 5}
+game = true
 love.graphics.setDefaultFilter("nearest")
 function love.load()
     font = love.graphics.newFont("kenpixel.ttf", 14)
@@ -43,8 +43,12 @@ if game then
         table.insert(bullets, bullet)
       end
     end
-    if
-    tie.x, tie.y = tie.x + tie.dx*dt, tie.y + tie.dy*dt
+    if isInBounds({x=tie.x + tie.dx*dt, y=tie.y + tie.dy*dt}) then
+      tie.x, tie.y = tie.x + tie.dx*dt, tie.y + tie.dy*dt
+    else
+      tie.dx = -tie.dx/4
+      tie.dy = -tie.dy/4
+    end
     --start xwing
     xwing.timeFire = xwing.timeFire + dt
     if love.keyboard.isDown("left") then
@@ -90,4 +94,7 @@ function playerProj(p,o,w2,h2)
          o.x < (p.x-p.w/2)+p.w and
          (p.y-p.h/2) < o.y+h2 and
          o.y < (p.y-p.h/2)+p.h
+end
+function isInBounds(p)
+  return p.x > 0 and p.y > 0 and p.x<love.graphics.getWidth() and p.y<love.graphics.getHeight()
 end
