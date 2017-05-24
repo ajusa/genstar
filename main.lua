@@ -1,40 +1,26 @@
-local bump = require 'bump'
 local tie = {x=400, y=400, w=16, h=16, dx=0, dy=0, speed=1.5, angle=0, turnSpeed = 2, fireDelay = .5, timeFire = 0, bulletSpeed = 100, lives = 5}
 local xwing = {x=500, y=500, w=16, h=16, dx=0, dy=0, speed=1.5, angle=0, turnSpeed = 2, fireDelay = .5, timeFire = 0, bulletSpeed = 100, lives = 5}
-local world
+game = false
 love.graphics.setDefaultFilter("nearest")
-local tieFilter = function(item, other)
-  if other.isxwing then
-    --world:remove(other)
-    item.lives = item.lives - 1 
-    return 'cross'
-  end
-  return "cross"
-end
-local xwingFilter = function(item, other)
-  if other.istie then 
-    --world:remove(other)
-    item.lives = item.lives - 1 
-    return 'cross'
-  end
-  return "cross"
-end
-local bulletFilter = function(item, other)
-  return "cross"
-end
 function love.load()
     font = love.graphics.newFont("kenpixel.ttf", 14)
     love.graphics.setFont(font)
-    world = bump.newWorld()
     tie.image = love.graphics.newImage("tie.png")
     xwing.image = love.graphics.newImage("xwing.png")
-    world:add(tie, tie.x, tie.y, 16, 16)
-    world:add(xwing, xwing.x, xwing.y, 16, 16)
 	bullets = {}
 end
 function love.update(dt)
-	for i,v in ipairs(bullets) do
-		v.x, v.y = world:move(v, v.x + (v.dx * dt), v.y + (v.dy * dt), bulletFilter)
+
+if game then
+	for i=#bullets,1,-1 do
+		bullets[i].x, bullets[i].y =  bullets[i].x + (bullets[i].dx * dt), bullets[i].y + (bullets[i].dy * dt)
+    if bullets[i].from == "xwing" and (playerProj(tie, bullets[i], 6,6)) then
+      tie.lives = tie.lives - 1
+      table.remove(bullets, i)
+    elseif bullets[i].from == "tie" and (playerProj(xwing, bullets[i], 6,6)) then
+      xwing.lives = xwing.lives - 1
+      table.remove(bullets, i)
+    end
 	end
   --start tie
     tie.timeFire = tie.timeFire + dt
@@ -53,12 +39,12 @@ function love.update(dt)
     if love.keyboard.isDown("space") then
       if tie.timeFire > tie.fireDelay then
         tie.timeFire = 0
-        bullet = {x = tie.x, y = tie.y, dx = tie.dx+ tie.bulletSpeed * math.sin(tie.angle), dy = tie.dy + (-tie.bulletSpeed * math.cos(tie.angle)), istie = true}
+        bullet = {x = tie.x, y = tie.y, dx = tie.dx+ tie.bulletSpeed * math.sin(tie.angle), dy = tie.dy + (-tie.bulletSpeed * math.cos(tie.angle)), from = "tie"}
         table.insert(bullets, bullet)
-        world:add(bullet, bullet.x, bullet.y, 6, 6)
       end
     end
-    tie.x, tie.y = world:move(tie, tie.x + tie.dx*dt, tie.y + tie.dy*dt, tieFilter)
+    if
+    tie.x, tie.y = tie.x + tie.dx*dt, tie.y + tie.dy*dt
     --start xwing
     xwing.timeFire = xwing.timeFire + dt
     if love.keyboard.isDown("left") then
@@ -76,14 +62,21 @@ function love.update(dt)
     if love.keyboard.isDown("rctrl") then
       if xwing.timeFire > xwing.fireDelay then
         xwing.timeFire = 0
-        bullet = {x = xwing.x, y = xwing.y, dx = xwing.dx + xwing.bulletSpeed * math.sin(xwing.angle), dy = xwing.dy + (-xwing.bulletSpeed * math.cos(xwing.angle)), isxwing = true}
+        bullet = {x = xwing.x, y = xwing.y, dx = xwing.dx + xwing.bulletSpeed * math.sin(xwing.angle), dy = xwing.dy + (-xwing.bulletSpeed * math.cos(xwing.angle)), from = "xwing"}
         table.insert(bullets, bullet)
-        world:add(bullet, bullet.x, bullet.y, 6, 6)
       end
     end
-    xwing.x, xwing.y = world:move(xwing, xwing.x + xwing.dx*dt, xwing.y + xwing.dy*dt, xwingFilter)
+    xwing.x, xwing.y = xwing.x + xwing.dx*dt, xwing.y + xwing.dy*dt
+  end
 end
 function love.draw()
+  if xwing.lives < 1 then
+    love.graphics.print("Tie Fighter Wins! ", 300, 200)
+    game = false
+  elseif tie.lives < 1 then
+    love.graphics.print("X-Wing Wins! ", 300, 200)
+    game = false
+  end
   love.graphics.print("Tie Lives: " .. tie.lives, 50, 20)
   love.graphics.print("X-Wing Lives: " .. xwing.lives, 200, 20)
   for i,v in ipairs(bullets) do
@@ -91,4 +84,10 @@ function love.draw()
 	end
     love.graphics.draw(tie.image, tie.x, tie.y, tie.angle, 2, 2, 8, 8)
     love.graphics.draw(xwing.image, xwing.x, xwing.y, xwing.angle, 2, 2, 8, 8)
+end
+function playerProj(p,o,w2,h2)
+  return (p.x-p.w/2) < o.x+w2 and
+         o.x < (p.x-p.w/2)+p.w and
+         (p.y-p.h/2) < o.y+h2 and
+         o.y < (p.y-p.h/2)+p.h
 end
