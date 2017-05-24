@@ -70,7 +70,13 @@ if game then
         table.insert(bullets, bullet)
       end
     end
-    xwing.x, xwing.y = xwing.x + xwing.dx*dt, xwing.y + xwing.dy*dt
+    if isInBounds({x=xwing.x + xwing.dx*dt, y=xwing.y + xwing.dy*dt}) then
+      xwing.x, xwing.y = xwing.x + xwing.dx*dt, xwing.y + xwing.dy*dt
+    else
+      xwing.dx = -xwing.dx/4
+      xwing.dy = -xwing.dy/4
+    end
+    
   end
 end
 function love.draw()
