@@ -122,7 +122,7 @@ do
     draw = function(self)
       love.graphics.print(self.p.type .. " Health: " .. self.p.lives .. "%", 50 + self.p.offset, 20)
       love.graphics.draw(self.p.image, self.p.x, self.p.y, self.p.angle, 2, 2, 8, 8)
-      if self.p.lives < 0 then
+      if self.p.lives <= 0 then
         love.graphics.print(self.p.type .. " Loses! ", 300, 200)
         return love.graphics.draw(bomb, self.p.x, self.p.y, self.p.angle, 2, 2, 8, 8)
       end

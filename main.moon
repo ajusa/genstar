@@ -29,7 +29,7 @@ class Player extends Entity
 	draw: => 
 		love.graphics.print(@p.type .. " Health: " .. @p.lives .. "%", 50 + @p.offset, 20)
 		love.graphics.draw(@p.image, @p.x, @p.y, @p.angle, 2, 2, 8, 8)
-		if @p.lives < 0
+		if @p.lives <= 0
    			love.graphics.print(@p.type .. " Loses! ", 300, 200)
    			love.graphics.draw(bomb, @p.x, @p.y, @p.angle, 2, 2, 8, 8)
 	update: (dt) =>
